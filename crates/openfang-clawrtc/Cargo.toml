@@ -1,0 +1,45 @@
+[package]
+name = "openfang-clawrtc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "RustChain (RTC) integration for OpenFang — wallet, mining, fingerprints, and ecosystem tools"
+
+[dependencies]
+# Workspace deps
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+reqwest = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+ed25519-dalek = { workspace = true }
+rand = { workspace = true }
+zeroize = { workspace = true }
+aes-gcm = { workspace = true }
+argon2 = { workspace = true }
+base64 = { workspace = true }
+chrono = { workspace = true }
+dirs = { workspace = true }
+
+# OpenFang types for tool integration
+openfang-types = { path = "../openfang-types" }
+
+# CLI (feature-gated)
+clap = { workspace = true, optional = true }
+colored = { workspace = true, optional = true }
+
+[features]
+default = []
+cli = ["dep:clap", "dep:colored"]
+
+[[bin]]
+name = "clawrtc"
+path = "src/cli.rs"
+required-features = ["cli"]
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+tempfile = { workspace = true }

@@ -371,8 +371,12 @@ pub async fn execute_tool(
         "canvas_present" => tool_canvas_present(input, workspace_root).await,
 
         other => {
+            // RustChain (ClawRTC) tools
+            if openfang_clawrtc::is_clawrtc_tool(other) {
+                openfang_clawrtc::execute_clawrtc_tool(other, input).await
+            }
             // Fallback 1: MCP tools (mcp_{server}_{tool} prefix)
-            if mcp::is_mcp_tool(other) {
+            else if mcp::is_mcp_tool(other) {
                 if let Some(mcp_conns) = mcp_connections {
                     if let Some(server_name) = mcp::extract_mcp_server(other) {
                         let mut conns = mcp_conns.lock().await;
@@ -444,7 +448,7 @@ pub async fn execute_tool(
 
 /// Get definitions for all built-in tools.
 pub fn builtin_tool_definitions() -> Vec<ToolDefinition> {
-    vec![
+    let mut tools = vec![
         // --- Filesystem tools ---
         ToolDefinition {
             name: "file_read".to_string(),
@@ -1088,7 +1092,12 @@ pub fn builtin_tool_definitions() -> Vec<ToolDefinition> {
                 "required": ["html"]
             }),
         },
-    ]
+    ];
+
+    // --- RustChain (ClawRTC) tools ---
+    tools.extend(openfang_clawrtc::clawrtc_tool_definitions());
+
+    tools
 }
 
 // ---------------------------------------------------------------------------

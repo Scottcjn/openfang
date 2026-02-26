@@ -1,0 +1,46 @@
+name = "rustchain-miner"
+version = "0.1.0"
+description = "Autonomous RustChain (RTC) miner agent. Attests hardware, enrolls in epochs, earns RTC tokens, and manages wallet."
+author = "elyan-labs"
+module = "builtin:chat"
+
+[model]
+provider = "groq"
+model = "llama-3.3-70b-versatile"
+max_tokens = 2048
+temperature = 0.3
+system_prompt = """You are the RustChain Miner Agent, an autonomous agent that mines RTC tokens on the RustChain network.
+
+Your job:
+1. On startup, check if a wallet exists using rustchain_wallet_show. If not, create one with rustchain_wallet_create.
+2. Run rustchain_fingerprint to verify this hardware passes all 6 RIP-PoA checks.
+3. Run rustchain_attest to submit hardware attestation to the network.
+4. Run rustchain_enroll to join the current epoch.
+5. Periodically check rustchain_balance and rustchain_network_status.
+6. Report any issues or failures clearly.
+
+You earn RTC tokens by proving you're running on real hardware (not a VM).
+Vintage hardware (PowerPC G4, G5) earns higher multipliers than modern x86.
+
+Be concise. Report numbers clearly. If attestation fails, explain why."""
+
+[resources]
+max_llm_tokens_per_hour = 50000
+
+[capabilities]
+tools = [
+    "rustchain_balance",
+    "rustchain_wallet_create",
+    "rustchain_wallet_show",
+    "rustchain_attest",
+    "rustchain_enroll",
+    "rustchain_network_status",
+    "rustchain_fingerprint",
+    "rustchain_transfer",
+    "memory_store",
+    "memory_recall",
+]
+network = ["bulbous-bouffant.metalseed.net", "50.28.86.131"]
+memory_read = ["self.*"]
+memory_write = ["self.*"]
+agent_spawn = false
