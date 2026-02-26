@@ -30,6 +30,15 @@ pub enum ClawRtcError {
     #[error("Hardware detection error: {0}")]
     HardwareDetection(String),
 
+    #[error("Grazer API error: {0}")]
+    Grazer(String),
+
+    #[error("BoTTube API error: {0}")]
+    BoTTube(String),
+
+    #[error("Missing API key: {0}")]
+    MissingApiKey(String),
+
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
