@@ -392,11 +392,31 @@ MIT — use it however you want.
 - [Website & Documentation](https://openfang.sh)
 - [Quick Start Guide](https://openfang.sh/docs/getting-started)
 - [GitHub](https://github.com/RightNow-AI/openfang)
+- [Discord](https://discord.gg/sSJqgNnq6X)
 - [Twitter / X](https://x.com/openfangg)
 
 ---
 
+## Built by RightNow
+
 <p align="center">
-  <strong>Built with Rust. Secured with 16 layers. Agents that actually work for you.</strong><br/>
-  <sub>OpenFang is developed by <a href="https://github.com/RightNow-AI">RightNow AI</a></sub>
+  <a href="https://www.rightnowai.co/">
+    <img src="public/assets/rightnow-logo.webp" width="60" alt="RightNow Logo" />
+  </a>
+</p>
+
+<p align="center">
+  OpenFang is built and maintained by <a href="https://x.com/Akashi203"><strong>Jaber</strong></a>, Founder of <a href="https://www.rightnowai.co/"><strong>RightNow</strong></a>.
+</p>
+
+<p align="center">
+  <a href="https://www.rightnowai.co/">Website</a> &bull;
+  <a href="https://x.com/Akashi203">Twitter / X</a> &bull;
+  <a href="https://github.com/sponsors/RightNow-AI">Sponsor</a>
+</p>
+
+---
+
+<p align="center">
+  <strong>Built with Rust. Secured with 16 layers. Agents that actually work for you.</strong>
 </p>
