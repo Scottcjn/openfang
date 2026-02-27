@@ -20,15 +20,20 @@ function Write-Banner {
 }
 
 function Get-Architecture {
+    $arch = $null
     try {
-        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    } catch {
-        # PowerShell 5.1 fallback
+        $raw = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
+        $arch = "$raw"
+    } catch {}
+    if (-not $arch) {
         $arch = $env:PROCESSOR_ARCHITECTURE
     }
-    switch ($arch) {
-        { $_ -in "X64", "AMD64" }  { return "x86_64" }
-        { $_ -in "Arm64", "ARM64" } { return "aarch64" }
+    $archUpper = "$arch".ToUpper().Trim()
+    switch ($archUpper) {
+        { $_ -in "X64", "AMD64" }   { return "x86_64" }
+        { $_ -in "ARM64", "AARCH64" } { return "aarch64" }
+        { $_ -eq "3" }              { return "aarch64" }  # Enum int value
+        { $_ -eq "1" }              { return "x86_64" }   # Enum int value
         default {
             Write-Host "  Unsupported architecture: $arch" -ForegroundColor Red
             exit 1
