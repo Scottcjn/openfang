@@ -20,22 +20,40 @@ function Write-Banner {
 }
 
 function Get-Architecture {
-    $arch = $null
+    # Try multiple detection methods — piped iex can break some approaches
+    $arch = ""
+
+    # Method 1: .NET RuntimeInformation
     try {
-        $raw = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-        $arch = "$raw"
+        $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
     } catch {}
-    if (-not $arch) {
-        $arch = $env:PROCESSOR_ARCHITECTURE
+
+    # Method 2: PROCESSOR_ARCHITECTURE env var
+    if (-not $arch -or $arch -eq "") {
+        try { $arch = $env:PROCESSOR_ARCHITECTURE } catch {}
     }
+
+    # Method 3: WMI
+    if (-not $arch -or $arch -eq "") {
+        try {
+            $wmiArch = (Get-CimInstance Win32_Processor).Architecture
+            if ($wmiArch -eq 9) { $arch = "AMD64" }
+            elseif ($wmiArch -eq 12) { $arch = "ARM64" }
+        } catch {}
+    }
+
+    # Method 4: pointer size fallback (64-bit = 8 bytes)
+    if (-not $arch -or $arch -eq "") {
+        if ([IntPtr]::Size -eq 8) { $arch = "X64" }
+    }
+
     $archUpper = "$arch".ToUpper().Trim()
     switch ($archUpper) {
-        { $_ -in "X64", "AMD64" }   { return "x86_64" }
-        { $_ -in "ARM64", "AARCH64" } { return "aarch64" }
-        { $_ -eq "3" }              { return "aarch64" }  # Enum int value
-        { $_ -eq "1" }              { return "x86_64" }   # Enum int value
+        { $_ -in "X64", "AMD64", "X86_64" }     { return "x86_64" }
+        { $_ -in "ARM64", "AARCH64", "ARM" }     { return "aarch64" }
         default {
-            Write-Host "  Unsupported architecture: $arch" -ForegroundColor Red
+            Write-Host "  Unsupported architecture: $arch (detection may have failed)" -ForegroundColor Red
+            Write-Host "  Try: cargo install --git https://github.com/RightNow-AI/openfang openfang-cli" -ForegroundColor Yellow
             exit 1
         }
     }
