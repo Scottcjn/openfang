@@ -439,6 +439,15 @@ enum AgentCommands {
         /// Agent ID (UUID).
         agent_id: String,
     },
+    /// Update a running agent's configuration (e.g., switch its model).
+    Set {
+        /// Agent ID (UUID or prefix).
+        agent_id: String,
+        /// Field to update. Currently supported: model.
+        field: String,
+        /// New value for the field (interactive picker if omitted for model).
+        value: Option<String>,
+    },
 }
 
 #[derive(Subcommand)]
@@ -803,6 +812,11 @@ fn main() {
             AgentCommands::List { json } => cmd_agent_list(cli.config, json),
             AgentCommands::Chat { agent_id } => cmd_agent_chat(cli.config, &agent_id),
             AgentCommands::Kill { agent_id } => cmd_agent_kill(cli.config, &agent_id),
+            AgentCommands::Set {
+                agent_id,
+                field,
+                value,
+            } => cmd_agent_set(cli.config, &agent_id, &field, value),
         },
         Some(Commands::Workflow(sub)) => match sub {
             WorkflowCommands::List => cmd_workflow_list(),
@@ -1583,6 +1597,57 @@ fn cmd_agent_kill(config: Option<PathBuf>, agent_id_str: &str) {
     }
 }
 
+fn cmd_agent_set(config: Option<PathBuf>, agent_id_str: &str, field: &str, value: Option<String>) {
+    match field {
+        "model" => {
+            let model = value.unwrap_or_else(pick_model);
+            if let Some(base) = find_daemon() {
+                let client = daemon_client();
+                let body = daemon_json(
+                    client
+                        .put(format!("{base}/api/agents/{agent_id_str}/model"))
+                        .json(&serde_json::json!({"model": model}))
+                        .send(),
+                );
+                if body.get("error").is_some() {
+                    ui::error(&format!(
+                        "Failed to set model: {}",
+                        body["error"].as_str().unwrap_or("Unknown error")
+                    ));
+                    std::process::exit(1);
+                }
+                ui::success(&format!(
+                    "Agent {agent_id_str} model set to: {model}"
+                ));
+            } else {
+                let agent_id: AgentId = agent_id_str.parse().unwrap_or_else(|_| {
+                    ui::error(&format!("Invalid agent ID: {agent_id_str}"));
+                    ui::hint("Run `openfang agent list` to see agent IDs");
+                    std::process::exit(1);
+                });
+                let kernel = boot_kernel(config);
+                match kernel.set_agent_model(agent_id, &model) {
+                    Ok(()) => {
+                        ui::success(&format!(
+                            "Agent {agent_id} model set to: {model}"
+                        ));
+                    }
+                    Err(e) => {
+                        ui::error(&format!("Failed to set model: {e}"));
+                        std::process::exit(1);
+                    }
+                }
+            }
+        }
+        other => {
+            ui::error(&format!("Unknown field: '{other}'"));
+            ui::hint("Supported fields: model");
+            ui::hint("Usage: openfang agent set <AGENT_ID> model <MODEL>");
+            std::process::exit(1);
+        }
+    }
+}
+
 fn cmd_agent_new(config: Option<PathBuf>, template_name: Option<String>) {
     let all_templates = templates::load_all_templates();
     if all_templates.is_empty() {
@@ -1854,18 +1919,14 @@ fn cmd_doctor(json: bool, repair: bool) {
                             ui::check_ok(".env file (permissions fixed to 0600)");
                         }
                         repaired = true;
-                    } else {
-                        if !json {
-                            ui::check_warn(&format!(
-                                ".env file has loose permissions ({:o}), should be 0600",
-                                mode
-                            ));
-                        }
+                    } else if !json {
+                        ui::check_warn(&format!(
+                            ".env file has loose permissions ({:o}), should be 0600",
+                            mode
+                        ));
                     }
-                } else {
-                    if !json {
-                        ui::check_ok(".env file");
-                    }
+                } else if !json {
+                    ui::check_ok(".env file");
                 }
             }
             #[cfg(not(unix))]
