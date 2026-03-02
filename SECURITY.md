@@ -2,93 +2,42 @@
 
 ## Supported Versions
 
-| Version | Supported          |
-|---------|--------------------|
-| 0.1.x   | :white_check_mark: |
+We take security seriously. Please report security vulnerabilities for all supported versions.
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in OpenFang, please report it responsibly.
+**Please do not report security vulnerabilities through public GitHub issues.**
 
-**Do NOT open a public GitHub issue for security vulnerabilities.**
+Instead, please report them via email or create a draft security advisory.
 
-### How to Report
+### What to include in your report:
 
-1. Email: **security@openfang.ai**
-2. Include:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Affected versions
-   - Potential impact assessment
-   - Suggested fix (if any)
+* Type of issue (e.g., buffer overflow, SQL injection, cross-site scripting, etc.)
+* Full paths of source file(s) related to the issue
+* Location of the affected source code (tag/branch/commit or direct URL)
+* Any special configuration required to reproduce the issue
+* Step-by-step instructions to reproduce the issue
+* Proof-of-concept or exploit code (if possible)
+* Impact of the issue, including how an attacker might exploit it
 
-### What to Expect
+### Response Timeline
 
-- **Acknowledgment** within 48 hours
-- **Initial assessment** within 7 days
-- **Fix timeline** communicated within 14 days
-- **Credit** given in the advisory (unless you prefer anonymity)
+* We will acknowledge receipt of your vulnerability report within 48 hours
+* We will send a more detailed response within 72 hours indicating the next steps
+* We will keep you informed of our progress throughout the process
 
-### Scope
+## Preferred Languages
 
-The following are in scope for security reports:
+We prefer all communications to be in English.
 
-- Authentication/authorization bypass
-- Remote code execution
-- Path traversal / directory traversal
-- Server-Side Request Forgery (SSRF)
-- Privilege escalation between agents or users
-- Information disclosure (API keys, secrets, internal state)
-- Denial of service via resource exhaustion
-- Supply chain attacks via skill ecosystem
-- WASM sandbox escapes
+## Security Best Practices
 
-## Security Architecture
+If you're contributing to this project, please follow these security best practices:
 
-OpenFang implements defense-in-depth with the following security controls:
+* Never commit sensitive information (API keys, passwords, etc.)
+* Validate all user inputs
+* Use parameterized queries to prevent SQL injection
+* Keep dependencies up to date
+* Follow the principle of least privilege
 
-### Access Control
-- **Capability-based permissions**: Agents only access resources explicitly granted
-- **RBAC multi-user**: Owner/Admin/User/Viewer role hierarchy
-- **Privilege escalation prevention**: Child agents cannot exceed parent capabilities
-- **API authentication**: Bearer token with loopback bypass for local CLI
-
-### Input Validation
-- **Path traversal protection**: `safe_resolve_path()` / `safe_resolve_parent()` on all file operations
-- **SSRF protection**: Private IP blocking, DNS resolution checks, cloud metadata endpoint filtering
-- **Image validation**: Media type whitelist (png/jpeg/gif/webp), 5MB size limit
-- **Prompt injection scanning**: Skill content scanned for override attempts and data exfiltration
-
-### Cryptographic Security
-- **Ed25519 signed manifests**: Agent identity verification
-- **HMAC-SHA256 wire protocol**: Mutual authentication with nonce-based replay protection
-- **Secret zeroization**: `Zeroizing<String>` on all API key fields, wiped on drop
-
-### Runtime Isolation
-- **WASM dual metering**: Fuel limits + epoch interruption with watchdog thread
-- **Subprocess sandbox**: Environment isolation (`env_clear()`), restricted PATH
-- **Taint tracking**: Information flow labels prevent untrusted data in privileged operations
-
-### Network Security
-- **GCRA rate limiter**: Cost-aware token buckets per IP
-- **Security headers**: CSP, X-Frame-Options, X-Content-Type-Options, HSTS
-- **Health redaction**: Public endpoint returns minimal info; full diagnostics require auth
-- **CORS policy**: Restricted to localhost when no API key configured
-
-### Audit
-- **Merkle hash chain**: Tamper-evident audit trail for all agent actions
-- **Tamper detection**: Chain integrity verification via `/api/audit/verify`
-
-## Dependencies
-
-Security-critical dependencies are pinned and audited:
-
-| Dependency | Purpose |
-|------------|---------|
-| `ed25519-dalek` | Manifest signing |
-| `sha2` | Hash chain, checksums |
-| `hmac` | Wire protocol authentication |
-| `subtle` | Constant-time comparison |
-| `zeroize` | Secret memory wiping |
-| `rand` | Cryptographic randomness |
-| `governor` | Rate limiting |
+Thank you for helping keep this project secure! 🔒
